@@ -2,7 +2,14 @@ import streamlit as st
 import joblib
 
 # Load model
-model = joblib.load("../models/fake_news_model.pkl")
+from pathlib import Path
+import joblib
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+MODEL_PATH = BASE_DIR / "models" / "fake_news_model.pkl"
+
+model = joblib.load(MODEL_PATH)
 
 import streamlit as st
 
