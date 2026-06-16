@@ -1,65 +1,48 @@
 import streamlit as st
 import joblib
 from pathlib import Path
+import numpy as np
 
-# -----------------------------
-# Page config
-# -----------------------------
 st.set_page_config(
-    page_title="Fake News Detection",
-    page_icon="📰",
+    page_title="Advanced Fake News Detector",
+    page_icon="🧠",
     layout="wide"
 )
 
-# -----------------------------
-# Load model (Pipeline)
-# -----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
-MODEL_PATH = BASE_DIR / "models" / "fake_news_model.pkl"
+model = joblib.load(BASE_DIR / "models" / "fake_news_model.pkl")
 
-model = joblib.load(MODEL_PATH)
+st.title("🧠 Advanced Fake News Detection System")
 
-# -----------------------------
-# UI Sidebar
-# -----------------------------
-st.sidebar.title("Project Info")
-st.sidebar.write("""
-Fake News Detection System
+st.write("Paste a news article below:")
 
-- NLP (TF-IDF)
-- Machine Learning (Logistic Regression)
-- Streamlit Deployment
-""")
+news_text = st.text_area("News Input", height=250)
 
-# -----------------------------
-# Main UI
-# -----------------------------
-st.title("📰 Fake News Detection System")
-st.write("Enter a news article below to check whether it is REAL or FAKE.")
+if st.button("Analyze"):
 
-news_text = st.text_area("Paste News Article Here", height=200)
-
-# -----------------------------
-# Prediction
-# -----------------------------
-if st.button("Predict"):
-
-    if len(news_text.strip()) == 0:
-        st.warning("Please enter a news article.")
+    if len(news_text.strip()) < 30:
+        st.warning("Please enter a full news article.")
     else:
 
-        prediction = model.predict([news_text])[0]
-        confidence = max(model.predict_proba([news_text])[0])
+        prob = model.predict_proba([news_text])[0]
+        prediction = np.argmax(prob)
 
-        if prediction == 0:
-            st.error("⚠️ Fake News")
+        fake_prob = prob[0]
+        real_prob = prob[1]
+
+        st.subheader("Prediction Result")
+
+        if abs(fake_prob - real_prob) < 0.15:
+            st.warning("⚠️ Uncertain News")
+        elif prediction == 0:
+            st.error("❌ Fake News")
         else:
             st.success("✅ Real News")
 
-        st.metric("Confidence Score", f"{confidence*100:.2f}%")
+        st.subheader("Confidence Scores")
 
-# -----------------------------
-# Footer
-# -----------------------------
-st.markdown("---")
-st.caption("⚠️ This model is for educational purposes only and does not guarantee factual verification.")
+        st.progress(float(real_prob))
+        st.write(f"Real News Probability: {real_prob*100:.2f}%")
+
+        st.progress(float(fake_prob))
+        st.write(f"Fake News Probability: {fake_prob*100:.2f}%")
