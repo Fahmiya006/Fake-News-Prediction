@@ -47,16 +47,16 @@ if st.button("Predict"):
     else:
         prediction = model.predict([news_text])[0]
 
-confidence = max(
-    model.predict_proba([news_text])[0]
-)
+        confidence = max(
+            model.predict_proba([news_text])[0]
+        )
 
-if prediction == 0:
-    st.error("Fake News")
-else:
-    st.success("Real News")
+        if prediction == 0:
+            st.error("Fake News")
+        else:
+            st.success("Real News")
 
-st.metric(
-    "Confidence Score",
-    f"{confidence*100:.2f}%"
+        st.metric(
+            "Confidence Score",
+            f"{confidence*100:.2f}%"
 )
